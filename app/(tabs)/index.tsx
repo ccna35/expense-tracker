@@ -1,14 +1,76 @@
-import { StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, Text } from "react-native";
+import { View } from "@/components/Themed";
+import ExpenseItem from "@/components/ExpenseItem";
+import TotalExpenses from "@/components/TotalExpenses";
+import { API_URL } from "@/constants/http";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import Spinner from "@/components/Spinner";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function RecentExpensesScreen() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["expenses"],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/expenses.json`);
+      return response.data;
+    },
+  });
 
-export default function TabOneScreen() {
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  if (!data) {
+    return (
+      <View style={styles.noDataContainer}>
+        <Text
+          style={{
+            color: "#999",
+            fontSize: 28,
+          }}
+        >
+          No expenses found
+        </Text>
+      </View>
+    );
+  }
+
+  let recentExpenses = Object.entries(data).map(
+    ([id, value]: [string, any]) => ({
+      id,
+      ...value,
+      date: new Date(value.date),
+    })
+  );
+
+  recentExpenses = recentExpenses
+    .filter(
+      (expense) =>
+        new Date().getTime() - expense.date.getTime() < 7 * 24 * 60 * 60 * 1000
+    )
+    .toReversed();
+
+  const totalExpenses = recentExpenses
+    .reduce((acc, expense) => acc + expense.amount, 0)
+    .toFixed(2);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <TotalExpenses title="Last 7 days spend" totalExpenses={totalExpenses} />
+      <FlatList
+        data={recentExpenses}
+        renderItem={({ item }) => <ExpenseItem {...item} />}
+        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={() => (
+          <View
+            style={{
+              height: 1,
+              width: "100%",
+              backgroundColor: "#222",
+            }}
+          />
+        )}
+      />
     </View>
   );
 }
@@ -16,16 +78,11 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 20,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  noDataContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
