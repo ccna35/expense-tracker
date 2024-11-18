@@ -5,16 +5,16 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Slot, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
-import { ExpenseProvider } from "@/contexts/expenseContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
 import { store } from "@/store";
+import { useAppSelector } from "@/hooks";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -53,6 +53,39 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+const RenderLayout = () => {
+  const { isLoggedIn } = useAppSelector((state) => state.user);
+
+  return (
+    // If the user is logged in, render the private layout.
+    // isLoggedIn ? (
+    //   <Stack
+    //     screenOptions={{
+    //       headerShown: false,
+    //     }}
+    //   >
+    //     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    //     <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+    //     <Stack.Screen
+    //       name="modal-2"
+    //       options={{
+    //         presentation: "modal",
+    //         headerTitle: "Expense Details",
+    //       }}
+    //     />
+    //   </Stack>
+    // ) : (
+    // Otherwise, render the public layout.
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="(public)" options={{ headerShown: false }} />
+    </Stack>
+  );
+};
+
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
@@ -62,7 +95,10 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
-          <Stack>
+          <Slot />
+          {/* <Stack
+          >
+            <Stack.Screen name="(public)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="modal" options={{ presentation: "modal" }} />
             <Stack.Screen
@@ -72,7 +108,7 @@ function RootLayoutNav() {
                 headerTitle: "Expense Details",
               }}
             />
-          </Stack>
+          </Stack> */}
         </QueryClientProvider>
       </Provider>
     </ThemeProvider>

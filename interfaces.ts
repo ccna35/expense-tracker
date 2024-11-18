@@ -4,3 +4,9 @@ export interface IExpenseItem {
   amount: number;
   date: Date;
 }
+
+export interface ICategoryItem {
+  id: string;
+  categoryName: string;
+  createdAt: Date;
+}

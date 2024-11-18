@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text } from "react-native";
+import { Button, FlatList, StyleSheet, Text } from "react-native";
 import { View } from "@/components/Themed";
 import ExpenseItem from "@/components/ExpenseItem";
 import TotalExpenses from "@/components/TotalExpenses";
@@ -6,8 +6,14 @@ import { API_URL } from "@/constants/http";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { setIsLoggedIn } from "@/features/user/userSlice";
 
 export default function RecentExpensesScreen() {
+  const dispatch = useAppDispatch();
+
+  const { name } = useAppSelector((state) => state.user);
+
   const { data, isLoading } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => {
@@ -56,6 +62,27 @@ export default function RecentExpensesScreen() {
 
   return (
     <View style={styles.container}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 20,
+        }}
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontSize: 28,
+          }}
+        >
+          Hi, <Text style={{ fontWeight: 600 }}>{name}</Text>
+        </Text>
+        <Button
+          title="Log out"
+          onPress={() => dispatch(setIsLoggedIn(false))}
+        />
+      </View>
       <TotalExpenses title="Last 7 days spend" totalExpenses={totalExpenses} />
       <FlatList
         data={recentExpenses}

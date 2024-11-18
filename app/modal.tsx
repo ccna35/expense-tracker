@@ -87,6 +87,7 @@ export default function ModalScreen() {
           style={styles.input}
           placeholderTextColor="#999"
           cursorColor="#fff"
+          keyboardType="decimal-pad"
         />
         <Button
           title="Add Expense"
